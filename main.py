@@ -71,12 +71,11 @@ def convert_to_pdf(input_path, original_filename, output_dir="./docs"):
 
     elif file_extension in [".jpg", ".jpeg", ".png"]:
         image = Image.open(input_path)
-        print('outp', image)
+
         output_path = output_path.split("/")
         output_path[-1] = original_filename
         output_path = "/".join(output_path)
-        print('image outp path', output_path)
-        print('image inp path', input_path)
+
 
         image.save(output_path, "PDF")
         # os.rename(input_path, output_path)
@@ -91,12 +90,9 @@ def convert_to_pdf(input_path, original_filename, output_dir="./docs"):
     else:
         return None
     return output_path if os.path.exists(output_path) else None
-    # except Exception as e:
-    #     st.error(f"Error converting file: {e}")
-    #     return None
 
 
-# Generator to fetch and yield chunks from a POST request response
+
 def get_response_chunks(url, payload, headers, chunk_size=1024):
     """
     Generator to fetch and yield chunks from a POST request response.
@@ -126,7 +122,6 @@ def get_response_chunks(url, payload, headers, chunk_size=1024):
                     continue
     else:
         print(f"Failed to get a valid response. Status code: {response.status_code}")
-        print(response.text)
 
 
 # Initialize chat messages in session state
