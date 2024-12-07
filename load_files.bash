@@ -12,7 +12,7 @@ if [ ! -d "$TEST_DATASET_FOLDER" ]; then
     echo "Folder '$TEST_DATASET_FOLDER' does not exist. Downloading test_dataset.zip..."
     wget -O "test_dataset.zip" "$TEST_DATASET_URL"
     echo "Download completed. Extracting test_dataset.zip..."
-    unzip -o "test_dataset.zip" -d "$TEST_DATASET_FOLDER"
+    unzip -o "test_dataset.zip"
     echo "Extraction completed. Deleting the zip file..."
     rm -f "test_dataset.zip"
 else
@@ -24,7 +24,8 @@ if [ ! -d "$BYALDI_FOLDER" ]; then
     echo "Folder '$BYALDI_FOLDER' does not exist. Downloading byaldi.zip..."
     wget -O "byaldi.zip" "$BYALDI_URL"
     echo "Download completed. Extracting byaldi.zip..."
-    unzip -o "byaldi.zip" -d "$BYALDI_FOLDER"
+    unzip -o "byaldi.zip"
+    mv "byaldi" ".byaldi"
     echo "Extraction completed. Deleting the zip file..."
     rm -f "byaldi.zip"
 else

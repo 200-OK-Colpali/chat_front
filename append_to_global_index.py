@@ -23,5 +23,6 @@ mypath = './docs'
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 print('saved_filenames', saved_filenames)
-# for filename in onlyfiles:
-#     if filename not in 
+for filename in onlyfiles:
+    if filename not in saved_filenames:
+        pass
