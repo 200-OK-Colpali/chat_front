@@ -15,12 +15,14 @@ from os.path import isfile, join
 os.makedirs("./docs", exist_ok=True)
 
 
-saved_filenames = set()
-doc_ids_to_file_names_copy = RAG_with_index.get_doc_ids_to_file_names()
-for key in doc_ids_to_file_names_copy:
-    filename = doc_ids_to_file_names_copy[key]
-    filename = filename.split("/")[-1]
-    saved_filenames.add(filename)
+def get_saved_filenames():
+    saved_filenames = set()
+    doc_ids_to_file_names_copy = RAG_with_index.get_doc_ids_to_file_names()
+    for key in doc_ids_to_file_names_copy:
+        filename = doc_ids_to_file_names_copy[key]
+        filename = filename.split("/")[-1]
+        saved_filenames.add(filename)
+    return saved_filenames
 
 
 # Utility functions for file conversion
@@ -153,7 +155,7 @@ with st.sidebar:
 
             onlyfiles_docs.extend(onlyfiles_test_dataset)
 
-            if uploaded_file.name in saved_filenames:
+            if uploaded_file.name in get_saved_filenames():
                 st.sidebar.success(f"File already in index: {uploaded_file.name} ")
 
                 continue
@@ -169,7 +171,7 @@ with st.sidebar:
 
 
                 converted_file_name = converted_file.split('/')[-1]
-                if converted_file_name in saved_filenames:
+                if converted_file_name in get_saved_filenames():
                     st.sidebar.success(f"File already in index: {converted_file} ")
 
                     continue
@@ -186,6 +188,13 @@ with st.sidebar:
             )
             st.sidebar.success(f"Indexed: {os.path.basename(converted_file)} ")
 
+    st.header("Indexed Files")
+    saved_filenames = get_saved_filenames()
+    if saved_filenames:
+        for filename in sorted(saved_filenames):
+            st.write(f"- {filename}")
+    else:
+        st.write("No files indexed yet.")
 
 # Display chat messages
 for message in st.session_state.messages:
