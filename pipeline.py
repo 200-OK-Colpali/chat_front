@@ -102,9 +102,9 @@ def full_pipeline(query_text: str):
     
     pages_images_bytes = get_pages_images_bytes_from_pages_by_query(pages_by_query)
     
-    oollama_response = generate_oollama_response(images_bytes=pages_images_bytes, query_text=query_text)
+    # oollama_response = generate_oollama_response(images_bytes=pages_images_bytes, query_text=query_text)
     
-    return oollama_response
+    # return oollama_response
 
 
 res = full_pipeline("Какая выручка за 2016 год у ММК?")

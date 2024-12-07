@@ -1,10 +1,19 @@
 import streamlit as st
 import time
-import random  # To generate random query parameters
+import random
+import faker
 import requests
 import json
 
-# Generator to fetch and yield chunks from a POST request response
+f = faker.Faker()
+
+# Function to generate random files
+def gen_rand_files():
+    rand_files = {}
+    for i in range(random.randint(1, 15)):
+        rand_files[i] = f.file_name()
+    return rand_files
+
 def get_response_chunks(url, payload, headers, chunk_size=1024):
     """
     Generator to fetch and yield chunks from a POST request response.
@@ -36,22 +45,29 @@ def get_response_chunks(url, payload, headers, chunk_size=1024):
         print(f"Failed to get a valid response. Status code: {response.status_code}")
         print(response.text)
 
+
 # Initialize chat messages in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "files" not in st.session_state:
+    st.session_state.files = gen_rand_files()  # Initialize files in session state
 
 st.title("[200 OK Team] Nornickel Hackathon Multi-Model RAG with Colpali")
 
 # File uploader in the sidebar
 with st.sidebar:
     st.header("Upload Files")
-    uploaded_files = st.file_uploader(
-        "Choose a PDF file", accept_multiple_files=True
-    )
+    uploaded_files = st.file_uploader("Choose a PDF file", accept_multiple_files=True)
 
-    new_set = set()
-    for f in uploaded_files:
-        new_set.add(f.file_id)
+    # Generate and update the list of random files
+    st.subheader("Loaded Files")
+    for file_id, file_name in st.session_state.files.items():
+        st.write(f"{file_id}: {file_name}")  # Displaying random files in the sidebar
+
+    # Optionally, you could regenerate files every time the user interacts
+    if st.button("Update Files List"):
+        st.session_state.files = gen_rand_files()  # Update the files list in session state
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -72,12 +88,9 @@ if prompt := st.chat_input("What is up?"):
     random_query = random.randint(1, 10000)  # Random number to ensure a unique image URL
     img = f"https://cataas.com/cat?{random_query}"
 
-
     # Assistant response simulation
     with st.chat_message("assistant"):
-        
-        st.image('test_img2.jpg', )
-
+        st.image(img, )
 
         # URL for the Ollama API (or your specific model endpoint)
         url = "http://localhost:11434/api/chat"
@@ -88,9 +101,9 @@ if prompt := st.chat_input("What is up?"):
             "messages": [
                 {
                     "role": "user",
-                    "content": "Говори только на русском, запрещено говрить на каком-либо другом языке. Ограничь ответ до 3 предложений. " + "Тебе представлена выдача из поисковой системы, сгенерированная по следующему запросу пользователя: " + prompt,  # Use the user input as the content
+                    "content": prompt + " Limit your answer to 40 words",  # Use the user input as the content
                     "images": [open('test_base64.txt').read()],  # Assuming this is the image data, adjust as needed
-                    "max_tokens":10,
+                    "max_tokens": 10,
                     'context_length': 50
                 }
             ]
@@ -102,19 +115,12 @@ if prompt := st.chat_input("What is up?"):
         }
 
         # Use the generator to get chunks from the response
-        # response_text = ""
-        # for parsed_chunk in get_response_chunks(url, payload, headers):
-        #     message_content = parsed_chunk.get("message", {}).get("content", "")
-        #     if message_content:
-        #         response_text += message_content  # Append chunk content incrementally
         response = st.write_stream(get_response_chunks(url, payload, headers))  # Update the chat message with the content so far
-                # time.sleep(0.5)  # Simulate typing delay for a more natural experience
 
         # Save the assistant's response to session state
-
         st.session_state.messages.append({
             "role": "assistant",
             "content": response,
-            "image": 'test_img2.jpg',  # Example image URL (replace with actual image URL)
+            "image": img,  # Example image URL (replace with actual image URL)
             "caption": "Результат поиска"
         })
