@@ -2,6 +2,14 @@
 
 Запуск
 
+перед запуском загрузить тестовый датасет:
+https://disk.yandex.com/d/5i24L_kpgaWYJA
+
+и индекс:
+https://disk.yandex.com/d/dF7eBlPtJs9GNA
+
+byaldi переименовать в .byaldi
+
 ```
 streamlit run main.py
 ```
