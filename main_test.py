@@ -69,10 +69,13 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    random_query = random.randint(1, 10000)  # Random number to ensure a unique image URL
+    img = f"https://cataas.com/cat?{random_query}"
+
+
     # Assistant response simulation
     with st.chat_message("assistant"):
         
-        img = "https://cataas.com/cat?random"
         st.image(img, )
 
 
@@ -86,7 +89,9 @@ if prompt := st.chat_input("What is up?"):
                 {
                     "role": "user",
                     "content": prompt + "Limit your answer to 40 words",  # Use the user input as the content
-                    "images": [open('test_base64.txt').read()]  # Assuming this is the image data, adjust as needed
+                    "images": [open('test_base64.txt').read()],  # Assuming this is the image data, adjust as needed
+                    "max_tokens":10,
+                    'context_length': 50
                 }
             ]
         }
