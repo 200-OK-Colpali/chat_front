@@ -12,6 +12,7 @@ https://disk.yandex.com/d/5i24L_kpgaWYJA
 и индекс:
 https://disk.yandex.com/d/dF7eBlPtJs9GNA
 
+файлики разархивировать в папку с проектом,
 byaldi переименовать в .byaldi
 
 ```
