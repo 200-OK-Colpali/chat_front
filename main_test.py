@@ -71,9 +71,10 @@ if prompt := st.chat_input("What is up?"):
 
     # Assistant response simulation
     with st.chat_message("assistant"):
-        response = "Поиск в процессе..."
-        st.markdown(response)
-        time.sleep(1)
+        
+        img = "https://cataas.com/cat?random"
+        st.image(img, )
+
 
         # URL for the Ollama API (or your specific model endpoint)
         url = "http://localhost:11434/api/chat"
@@ -84,7 +85,7 @@ if prompt := st.chat_input("What is up?"):
             "messages": [
                 {
                     "role": "user",
-                    "content": prompt,  # Use the user input as the content
+                    "content": prompt + "Limit your answer to 40 words",  # Use the user input as the content
                     "images": [open('test_base64.txt').read()]  # Assuming this is the image data, adjust as needed
                 }
             ]
@@ -109,6 +110,6 @@ if prompt := st.chat_input("What is up?"):
         st.session_state.messages.append({
             "role": "assistant",
             "content": response,
-            "image": "https://cataas.com/cat?random",  # Example image URL (replace with actual image URL)
+            "image": img,  # Example image URL (replace with actual image URL)
             "caption": "Результат поиска"
         })
