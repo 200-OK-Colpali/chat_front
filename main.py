@@ -211,7 +211,7 @@ if prompt := st.chat_input("What is up?"):
     # Assistant response simulation
     with st.chat_message("assistant"):
 
-        oollama_response_generator, pages_images_base64 = full_pipeline(prompt)
+        oollama_response_generator, pages_images_base64, doc_path, page_num = full_pipeline(prompt)
 
         for base64_image in pages_images_base64:
             image_url = f"data:image/jpeg;base64,{base64_image}"
@@ -219,6 +219,9 @@ if prompt := st.chat_input("What is up?"):
 
         response = st.write_stream(oollama_response_generator)
 
+        doc_name = doc_path.split('/')[-1]
+
+        st.write(f"Информация из документа {doc_name} на странице {page_num}")
         # st.session_state.messages.append({
         #     "role": "assistant",
         #     "content": response,

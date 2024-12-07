@@ -73,16 +73,16 @@ def get_page_image_base64(pdf_path: str, page_number: int):
 
 
 def get_pages_images_base64_from_pages_by_query(pages_by_query: list):
-    pages_images_bytes = []
+    pages_images_base64 = []
 
     for page_data in pages_by_query:
         doc_path = page_data.get("doc_path")
         page_num = page_data.get("page_num")
 
         image_bytes = get_page_image_base64(doc_path, page_num)
-        pages_images_bytes.append(image_bytes)
+        pages_images_base64.append(image_bytes)
 
-    return pages_images_bytes
+    return pages_images_base64, doc_path, page_num
 
 
 def generate_oollama_response_generator(images_base64: list, query_text: str):
@@ -132,13 +132,13 @@ def generate_oollama_response_generator(images_base64: list, query_text: str):
 def full_pipeline(query_text: str):
     pages_by_query = query_index(query_text)
 
-    pages_images_base64 = get_pages_images_base64_from_pages_by_query(pages_by_query)
+    pages_images_base64, doc_path, page_num = get_pages_images_base64_from_pages_by_query(pages_by_query)
 
     oollama_response_generator = generate_oollama_response_generator(
         images_base64=pages_images_base64, query_text=query_text
     )
 
-    return oollama_response_generator, pages_images_base64
+    return oollama_response_generator, pages_images_base64, doc_path, page_num
 
 
 # oollama_response_generator, pages_images_base64 = full_pipeline("как дела у нлмк?")
