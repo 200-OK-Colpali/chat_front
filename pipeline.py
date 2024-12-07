@@ -109,7 +109,7 @@ def generate_oollama_response_generator(images_base64: list, query_text: str):
             )
             print(response.text)
 
-    url = "http://87.236.31.60:3000/api/chat"
+    url = "http://[указать тут адрес 2 машины]:8080/api/chat" # <--- Указать тут адрес второй машины
 
     # Prepare payload with user input dynamically
     payload = {
