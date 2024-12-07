@@ -4,6 +4,8 @@ import random  # To generate random query parameters
 import requests
 import json
 
+from pipeline import full_pipeline
+
 # Generator to fetch and yield chunks from a POST request response
 def get_response_chunks(url, payload, headers, chunk_size=1024):
     """
@@ -76,41 +78,15 @@ if prompt := st.chat_input("What is up?"):
     # Assistant response simulation
     with st.chat_message("assistant"):
         
-        st.image('test_img2.jpg', )
+        
+        oollama_response_generator, pages_images_base64 = full_pipeline(prompt)
 
+        for base64_image in pages_images_base64:
+            image_url = f"data:image/jpeg;base64,{base64_image}"
+            st.image(image_url)
+      
+        response = st.write_stream(oollama_response_generator)  
 
-        # URL for the Ollama API (or your specific model endpoint)
-        url = "http://localhost:11434/api/chat"
-
-        # Prepare payload with user input dynamically
-        payload = {
-            "model": "llama3.2-vision",  # Replace with the model name you want to use (e.g., Ollama)
-            "messages": [
-                {
-                    "role": "user",
-                    "content": "Говори только на русском, запрещено говрить на каком-либо другом языке. Ограничь ответ до 3 предложений. " + "Тебе представлена выдача из поисковой системы, сгенерированная по следующему запросу пользователя: " + prompt,  # Use the user input as the content
-                    "images": [open('test_base64.txt').read()],  # Assuming this is the image data, adjust as needed
-                    "max_tokens":10,
-                    'context_length': 50
-                }
-            ]
-        }
-
-        # Headers to indicate we're sending JSON data
-        headers = {
-            "Content-Type": "application/json"
-        }
-
-        # Use the generator to get chunks from the response
-        # response_text = ""
-        # for parsed_chunk in get_response_chunks(url, payload, headers):
-        #     message_content = parsed_chunk.get("message", {}).get("content", "")
-        #     if message_content:
-        #         response_text += message_content  # Append chunk content incrementally
-        response = st.write_stream(get_response_chunks(url, payload, headers))  # Update the chat message with the content so far
-                # time.sleep(0.5)  # Simulate typing delay for a more natural experience
-
-        # Save the assistant's response to session state
 
         st.session_state.messages.append({
             "role": "assistant",

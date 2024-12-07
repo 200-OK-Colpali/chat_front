@@ -1,5 +1,7 @@
 import base64
 import torch
+import json
+import requests
 
 import os 
 from byaldi import RAGMultiModalModel
@@ -42,9 +44,10 @@ def query_index(query_text: str):
     return parsed_results
     
 
-def get_page_image_bytes(pdf_path: str, page_number: int):
-    dpi=300
-    image_format="JPEG"
+def get_page_image_base64(pdf_path: str, page_number: int):
+    dpi = 300
+    image_format = "JPEG"
+    
     # Step 1: Extract the specific page into a temporary PDF
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
@@ -69,43 +72,78 @@ def get_page_image_bytes(pdf_path: str, page_number: int):
     images[0].save(image_bytes, format=image_format)
     image_bytes.seek(0)
 
-    return image_bytes.getvalue()
+    # Step 3: Encode image bytes into base64
+    image_base64 = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
+    
+    return image_base64
 
-def get_pages_images_bytes_from_pages_by_query(pages_by_query: list):
+
+def get_pages_images_base64_from_pages_by_query(pages_by_query: list):
     pages_images_bytes = []
 
     for page_data in pages_by_query:
         doc_path = page_data.get("doc_path")
         page_num = page_data.get("page_num")
 
-        image_bytes = get_page_image_bytes(doc_path, page_num)
+        image_bytes = get_page_image_base64(doc_path, page_num)
         pages_images_bytes.append(image_bytes)
 
     return pages_images_bytes
 
 
-def generate_oollama_response(images_bytes: list, query_text: str):
-    response = ollama.chat(
-        model='llama3.2-vision',
-        messages=[{
-            'role': 'user',
-            'content': f'{query_text}',
-            'images': images_bytes
-        }]
-        )
+def generate_oollama_response_generator(images_base64: list, query_text: str):
+    def get_response_chunks(url, payload, headers, chunk_size=1024):
 
-    return response
+        # Send the POST request with streaming enabled
+        response = requests.post(url, json=payload, headers=headers, stream=True)
+        
+        if response.status_code == 200:
+            # Iterate over the response in chunks
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:  # Only process non-empty chunks
+                    try:
+                        # Parse and yield the parsed chunk as a dictionary
+                        parsed_chunk = json.loads(chunk.decode('utf-8'))
+                        # parsed_chunk = parsed_chunk.get("message", {}).get("content", "")
+                        yield parsed_chunk.get("message", {}).get("content", "")
+                    except json.JSONDecodeError:
+                        print("Error decoding chunk")
+                        continue
+        else:
+            print(f"Failed to get a valid response. Status code: {response.status_code}")
+            print(response.text)
+
+    url = "http://87.236.31.60:3000/api/chat"
+
+    # Prepare payload with user input dynamically
+    payload = {
+        "model": "llama3.2-vision",  # Replace with the model name you want to use (e.g., Ollama)
+        "messages": [
+            {
+                "role": "user",
+                "content": query_text,  # Use the user input as the content
+                "images": images_base64,  # Assuming this is the image data, adjust as needed
+            }
+        ]
+    }
+
+    # Headers to indicate we're sending JSON data
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    return get_response_chunks(url, payload, headers)
 
 
 def full_pipeline(query_text: str):
     pages_by_query = query_index(query_text)
     
-    pages_images_bytes = get_pages_images_bytes_from_pages_by_query(pages_by_query)
+    pages_images_base64 = get_pages_images_base64_from_pages_by_query(pages_by_query)
     
-    # oollama_response = generate_oollama_response(images_bytes=pages_images_bytes, query_text=query_text)
+    oollama_response_generator = generate_oollama_response_generator(images_base64=pages_images_base64, query_text=query_text)
     
-    # return oollama_response
+    return oollama_response_generator, pages_images_base64
 
 
-res = full_pipeline("Какая выручка за 2016 год у ММК?")
-print(res)
+# res = full_pipeline("Какая выручка за 2016 год у ММК?")
+# print(res)
