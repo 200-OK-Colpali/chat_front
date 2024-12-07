@@ -145,5 +145,7 @@ def full_pipeline(query_text: str):
     return oollama_response_generator, pages_images_base64
 
 
-# res = full_pipeline("Какая выручка за 2016 год у ММК?")
-# print(res)
+# oollama_response_generator, pages_images_base64 = full_pipeline("как дела у нлмк?")
+
+# for text in oollama_response_generator:
+#     print(text, end='')

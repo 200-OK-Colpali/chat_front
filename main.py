@@ -1,24 +1,140 @@
 import streamlit as st
-import time
+import os
 import random  # To generate random query parameters
+import requests
+import json
+from pipeline import full_pipeline, RAG_with_index
+import shutil
+import tempfile
+from PIL import Image
+import subprocess
 
-uploaded_files_set = set()
+# Ensure ./docs folder exists
+os.makedirs("./docs", exist_ok=True)
+
+
+saved_filenames = set()
+doc_ids_to_file_names_copy = RAG_with_index.get_doc_ids_to_file_names()
+for key in doc_ids_to_file_names_copy:
+    filename = doc_ids_to_file_names_copy[key]
+    filename = filename.split('/')[-1]
+    saved_filenames.add(filename)
+
+
+# Utility functions for file conversion
+def convert_to_pdf(input_path, original_filename, output_dir="./docs"):
+    """
+    Converts a file to PDF using appropriate methods based on file type.
+    
+    Args:
+        input_path (str): Path to the input file.
+        output_dir (str): Directory to save the converted PDF.
+    
+    Returns:
+        str: Path to the converted PDF or None if conversion fails.
+    """
+    file_extension = os.path.splitext(input_path)[1].lower()
+    output_path = os.path.join(output_dir, os.path.splitext(os.path.basename(input_path))[0] + ".pdf")
+    
+    original_filename = original_filename.split('.')
+    original_filename = original_filename[0] + '.pdf'
+
+
+    # try:
+    if file_extension in [".docx", ".doc", ".pptx", ".ppt", ".xlsx", ".xls"]:
+        if not shutil.which("libreoffice"):
+            raise EnvironmentError("LibreOffice is not installed or not in PATH.")
+        subprocess.run(
+            ["libreoffice", "--headless", "--convert-to", "pdf", input_path, "--outdir", output_dir],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        save_dir = output_dir + '/' + input_path.split('/')[-1]
+  
+      
+        save_dir = save_dir.split('.')
+        save_dir = './' + save_dir[1] + '.pdf'
+        new_name = output_dir + '/' + original_filename
+        os.rename(save_dir, new_name)
+
+    elif file_extension in [".jpg", ".jpeg", ".png"]:
+        image = Image.open(input_path)
+
+        output_path = output_path.split('/')
+        output_path[-1] = original_filename
+        output_path = '/'.join(output_path)
+
+        image.save(output_path, "PDF")
+    elif file_extension == ".pdf":
+        shutil.copy(input_path, output_path)
+    else:
+        return None
+    return output_path if os.path.exists(output_path) else None
+    # except Exception as e:
+    #     st.error(f"Error converting file: {e}")
+    #     return None
+
+# Generator to fetch and yield chunks from a POST request response
+def get_response_chunks(url, payload, headers, chunk_size=1024):
+    """
+    Generator to fetch and yield chunks from a POST request response.
+    Args:
+        url (str): The API endpoint.
+        payload (dict): The JSON payload for the POST request.
+        headers (dict): The headers to include in the request.
+        chunk_size (int): The size of each chunk (in bytes) to read.
+    
+    Yields:
+        dict: A parsed JSON chunk from the response.
+    """
+    # Send the POST request with streaming enabled
+    response = requests.post(url, json=payload, headers=headers, stream=True)
+    
+    if response.status_code == 200:
+        # Iterate over the response in chunks
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:  # Only process non-empty chunks
+                try:
+                    # Parse and yield the parsed chunk as a dictionary
+                    parsed_chunk = json.loads(chunk.decode('utf-8'))
+                    # parsed_chunk = parsed_chunk.get("message", {}).get("content", "")
+                    yield parsed_chunk.get("message", {}).get("content", "")
+                except json.JSONDecodeError:
+                    print("Error decoding chunk")
+                    continue
+    else:
+        print(f"Failed to get a valid response. Status code: {response.status_code}")
+        print(response.text)
+
+# Initialize chat messages in session state
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 st.title("[200 OK Team] Nornickel Hackathon Multi-Model RAG with Colpali")
 
 # File uploader in the sidebar
 with st.sidebar:
     st.header("Upload Files")
     uploaded_files = st.file_uploader(
-        "Choose a PDF file", accept_multiple_files=True
+        "Upload Word, Excel, PowerPoint, Image, or PDF files", accept_multiple_files=True
     )
 
-    new_set = set()
-    for f in uploaded_files:
-        new_set.add(f.file_id)
+    # Process uploaded files
+    if uploaded_files:
+        st.write("**Processing Files...**")
+        for uploaded_file in uploaded_files:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp:
+                tmp.write(uploaded_file.read())
+                temp_path = tmp.name
 
-# Initialize chat messages in session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+            try:
+                converted_file = convert_to_pdf(temp_path, uploaded_file.name)
+                
+                st.sidebar.success(f"Saved: {os.path.basename(converted_file)} to ./docs")
+            except Exception as e:
+                st.sidebar.error(f"Failed to process: {uploaded_file.name} , {e}")
+
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -36,24 +152,26 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    random_query = random.randint(1, 10000)  # Random number to ensure a unique image URL
+    img = f"https://cataas.com/cat?{random_query}"
+
+
     # Assistant response simulation
     with st.chat_message("assistant"):
-        response = "Поиск в процессе..."
-        st.markdown(response)
-        time.sleep(3)
+        
+        
+        oollama_response_generator, pages_images_base64 = full_pipeline(prompt)
 
-        # Generate a unique URL for the random image
-        random_query = random.randint(1, 10000)
-        image_url = f"https://cataas.com/cat?{random_query}"  # Append random query
+        for base64_image in pages_images_base64:
+            image_url = f"data:image/jpeg;base64,{base64_image}"
+            st.image(image_url)
+      
+        response = st.write_stream(oollama_response_generator)  
 
-        response_text = "Результат поиска"
-        st.image(image_url, caption="Результат поиска")
-        st.markdown(response_text)
 
-        # Save the assistant's response to session state
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": response_text,
-            "image": image_url,
-            "caption": "Результат поиска"
-        })
+        # st.session_state.messages.append({
+        #     "role": "assistant",
+        #     "content": response,
+        #     "image": 'test_img2.jpg',  # Example image URL (replace with actual image URL)
+        #     "caption": "Результат поиска"
+        # })
