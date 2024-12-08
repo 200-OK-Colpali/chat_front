@@ -140,6 +140,10 @@ with st.sidebar:
         accept_multiple_files=True,
     )
 
+    # st.subheader("Select Index")
+    # indices = RAG_with_index.list_indices()  # Replace with the method to list all indices
+    # selected_index = st.selectbox("Choose an index", indices)
+
     # Process uploaded files
     if uploaded_files:
         st.write("**Processing Files...**")
