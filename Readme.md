@@ -31,9 +31,7 @@
 
 ## Демонстрация
 
-<a href="https://gifyu.com/image/SJIDD"><img src="https://s7.gifyu.com/images/SJIDD.gif" alt="Colpali RAG demo ezgif.com speed" border="0" /></a>
-
-![GIF Demo](https://s7.gifyu.com/images/SJIDD.gif)
+![GIF Demo](https://github.com/200-OK-Colpali/chat_front/blob/main/Colpali-RAG-demo-ezgif.com-speed.gif)
 
 
 ## Cold Start
