@@ -7,18 +7,18 @@
 ---
 
 ## Результат хакатона
-Команда заняла 3-е место
+Команда заняла 3-е место </br >
 ![](https://github.com/200-OK-Colpali/chat_front/blob/main/results.jpg)
 
 ---
 
 ## Команда
 
-[Сибриков Александр](https://t.me/sibrikov) - Капитан
-[Малыш Игорь](https://t.me/igmalysh) - Fullstack
-[Гусаров Алексей](https://t.me/korolaab) - ML Captain
-[Шкиров Виктор](https://t.me/mc_pendulum) - Backend
-[Шарафутдинов Артур](https://t.me/ArchiBut) - ML
+[Сибриков Александр](https://t.me/sibrikov) - Капитан </br >
+[Малыш Игорь](https://t.me/igmalysh) - Fullstack </br >
+[Гусаров Алексей](https://t.me/korolaab) - ML Captain </br >
+[Шкиров Виктор](https://t.me/mc_pendulum) - Backend </br >
+[Шарафутдинов Артур](https://t.me/ArchiBut) - ML </br >
 ---
 
 [На время хакатона] Решение развернуто здесь:
