@@ -31,7 +31,7 @@
 
 ## Демонстрация
 
-![GIF Demo](http://d.zaix.ru/Km7q.gif)
+![GIF Demo](https://gifyu.com/image/SJIDD)
 
 
 ## Cold Start
