@@ -8,6 +8,13 @@
 Решение развернуто здесь:
 http://95.31.161.233:8080/
 
+При возникновении неполадок, пожалуйста, напишите нам в телеграм:
+https://t.me/sibrikov
+https://t.me/igmalysh
+https://t.me/korolaab
+https://t.me/mc_pendulum
+https://t.me/ArchiBut
+
 ---
 
 ## Обзор  
