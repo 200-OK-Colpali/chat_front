@@ -3,7 +3,10 @@ import os
 import random  # To generate random query parameters
 import requests
 import json
-from pipeline import full_pipeline, RAG_with_index
+import torch
+import gc
+import time
+from pipeline import full_pipeline, RAG_with_index, RAGMultiModalModel
 import shutil
 import tempfile
 from PIL import Image
@@ -11,11 +14,38 @@ import subprocess
 from os import listdir
 from os.path import isfile, join
 
+
+prev_index_name = None
 # Ensure ./docs folder exists
 os.makedirs("./docs", exist_ok=True)
 
 
-def get_saved_filenames():
+def get_all_folder_names(path):
+    """
+    Get all folder names at the specified path.
+
+    Args:
+        path (str): The directory path.
+
+    Returns:
+        list: A list of folder names.
+    """
+    try:
+        # List all directories in the given path
+        folder_names = [
+            folder for folder in os.listdir(path) 
+            if os.path.isdir(os.path.join(path, folder))
+        ]
+        return folder_names
+    except FileNotFoundError:
+        print(f"The path '{path}' does not exist.")
+        return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
+
+def get_saved_to_index_filenames():
     saved_filenames = set()
     doc_ids_to_file_names_copy = RAG_with_index.get_doc_ids_to_file_names()
     for key in doc_ids_to_file_names_copy:
@@ -126,6 +156,22 @@ def get_response_chunks(url, payload, headers, chunk_size=1024):
         print(f"Failed to get a valid response. Status code: {response.status_code}")
 
 
+def update_selected_index(new_index_name):
+    global RAG_with_index
+
+
+    if "prev_selected_index_path" not in st.session_state:
+        st.session_state.prev_selected_index_path = None
+
+    if not st.session_state.prev_selected_index_path or st.session_state.prev_selected_index_path != new_index_name:
+        print('tryin to load dis indx', './'+new_index_name)
+        RAG_with_index = RAGMultiModalModel.from_index(
+        index_path='./'+new_index_name,  # Путь к папке с индексом
+        verbose=1,
+        device="cuda",  # Укажите устройство, например "cuda" или "cpu"
+    )
+        st.session_state.prev_selected_index_path = new_index_name
+
 # Initialize chat messages in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -134,15 +180,56 @@ st.title("[200 OK Team] Nornickel Hackathon Multi-Model RAG with Colpali")
 
 # File uploader in the sidebar
 with st.sidebar:
+    
+    st.header("Index Management")
+
+    indices = get_all_folder_names('./.byaldi')
+    # Dropdown to select the index
+    if not indices:
+        st.info("No indices available. Please create one.")
+
+    selected_index = st.selectbox("Select an Index", indices, key="index_selector")
+    
+
+    try:
+        st.sidebar.success(f"Loading index: {selected_index} ")
+        update_selected_index(selected_index)
+        st.sidebar.success(f"Successfully loaded index: {selected_index} ")
+    except Exception as e:
+        st.sidebar.error(f"Failder to load index: {selected_index} , reason:{e}")
+
+
+    # Button to create a new index
+    st.subheader("Create New Index")
+    new_index_name = st.text_input("New Index Name", placeholder="Enter a unique index name")
+    if st.button("Create Index"):
+        if new_index_name.strip() and new_index_name not in indices:
+            RAG_with_index.index(
+                input_path='./test_pdf.pdf',
+                index_name=new_index_name,
+                store_collection_with_index=False,  # set this to false if you don't want to store the base64 representation
+                overwrite=False,
+            )
+
+        else:
+            st.error("Invalid or duplicate index name.")
+        
+        indices = get_all_folder_names('./.byaldi')
+        # Dropdown to select the index
+        if not indices:
+            st.info("No indices available. Please create one.")
+        # selected_index.on
+    
+    if st.button("Update Index List"):
+        pass
+
+
     st.header("Upload Files")
     uploaded_files = st.file_uploader(
         "Upload Word, Excel, PowerPoint, Image, or PDF files",
         accept_multiple_files=True,
     )
 
-    # st.subheader("Select Index")
-    # indices = RAG_with_index.list_indices()  # Replace with the method to list all indices
-    # selected_index = st.selectbox("Choose an index", indices)
 
     # Process uploaded files
     if uploaded_files:
@@ -159,7 +246,7 @@ with st.sidebar:
 
             onlyfiles_docs.extend(onlyfiles_test_dataset)
 
-            if uploaded_file.name in get_saved_filenames():
+            if uploaded_file.name in get_saved_to_index_filenames():
                 st.sidebar.success(f"File already in index: {uploaded_file.name} ")
 
                 continue
@@ -175,7 +262,7 @@ with st.sidebar:
 
 
                 converted_file_name = converted_file.split('/')[-1]
-                if converted_file_name in get_saved_filenames():
+                if converted_file_name in get_saved_to_index_filenames():
                     st.sidebar.success(f"File already in index: {converted_file} ")
 
                     continue
@@ -193,7 +280,7 @@ with st.sidebar:
             st.sidebar.success(f"Indexed: {os.path.basename(converted_file)} ")
 
     st.header("Indexed Files")
-    saved_filenames = get_saved_filenames()
+    saved_filenames = get_saved_to_index_filenames()
     if saved_filenames:
         for filename in sorted(saved_filenames):
             st.write(f"- {filename}")
