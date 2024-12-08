@@ -31,6 +31,8 @@
 
 ## Демонстрация
 
+<a href="https://gifyu.com/image/SJIDD"><img src="https://s7.gifyu.com/images/SJIDD.gif" alt="Colpali RAG demo ezgif.com speed" border="0" /></a>
+
 ![GIF Demo](https://s7.gifyu.com/images/SJIDD.gif)
 
 
