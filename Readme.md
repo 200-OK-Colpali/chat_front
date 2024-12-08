@@ -86,8 +86,8 @@ GPU: RTX4090 24GB (машина 2 для инференса LLaMA 3.2)
 
 Внести изменение в `pipelines.py`:
 ```python
-# В функции generate_oollama_response_generator указать адрес 2-й машины
-url = "http://[указать тут адрес 2 машины]:8080/api/chat"
+# В функции generate_oollama_response_generator указать адрес 2-й машины и 3000 порт
+url = "http://[указать тут адрес 2 машины]:3000/api/chat"
 ```
 
 ### 1. Запуск на машине 2
