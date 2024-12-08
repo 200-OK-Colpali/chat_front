@@ -1,15 +1,5 @@
-***Фронтенд команды 200 OK***
-
-
-Демонстрация работы к чекпоинту 1:
-
-Демо гифка:
-<br />
-![](https://github.com/200-OK-Colpali/chat_front/blob/main/docs/checkpoint1_demo.gif)
-
-[Видео](https://github.com/200-OK-Colpali/chat_front/blob/main/docs/Demo_checkpoint_1.mp4)
-
-
+# Чатбот с colpali мультимодальным поиском и генерацией ответа с помощью llama 3.2 vision 11b 
+Команда 200 OK
 
 ## Запуск в Docker
 
