@@ -3,9 +3,25 @@
 Команда: 200 OK
 
 Трек: Мультимодальные RAG модели
+
 ---
 
-Решение развернуто здесь:
+## Результат хакатона
+Команда заняла 3-е место
+![](https://github.com/200-OK-Colpali/chat_front/blob/main/results.jpg)
+
+---
+
+## Команда
+
+[Сибриков Александр](https://t.me/sibrikov) - Капитан
+[Малыш Игорь](https://t.me/igmalysh) - Fullstack
+[Гусаров Алексей](https://t.me/korolaab) - ML Captain
+[Шкиров Виктор](https://t.me/mc_pendulum) - Backend
+[Шарафутдинов Артур](https://t.me/ArchiBut) - ML
+---
+
+[На время хакатона] Решение развернуто здесь:
 </br >
 http://95.31.161.233:8080/
 
