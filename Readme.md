@@ -72,8 +72,6 @@ GPU: RTX4090 24GB (машина 2 для инференса LLaMA 3.2)
       3. Запустить create_new_index.py
       4. В файле pipeline.py найти строчку index_path="./global_index" и поменять название индекса с global_index на свое
       5. Готово
-   
----
 
 1. ❗Внести изменение в `pipelines.py`
 
